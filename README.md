@@ -1,3 +1,6 @@
+<script src="https://liberapay.com/schrieveslaach/widgets/button.js"></script>
+<noscript><a href="https://liberapay.com/schrieveslaach/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>
+
 # sonarlint.nvim
 
 Extensions for the built-in [Language Server Protocol][1] support in [Neovim][2] (>= 0.8.0) for [sonarlint-language-server][3].
