@@ -9,6 +9,10 @@ Extensions for the built-in [Language Server Protocol][1] support in [Neovim][2]
 [2]: https://neovim.io/
 [3]: https://github.com/SonarSource/sonarlint-language-server
 
+# Warning :warning:
+
+This repository is work in progress and the API is likely to change.
+
 # Setup
 
 ```lua
