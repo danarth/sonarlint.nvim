@@ -2,17 +2,12 @@ local M = {}
 
 M.client_id = nil
 
-local function start_sonarlint_lsp(user_config, analyzer_paths)
+local function start_sonarlint_lsp(user_config)
    local config = {}
    config.name = 'sonarlint.nvim'
    config.root_dir = user_config.root_dir or vim.fs.dirname(vim.fs.find({'.git'}, { upward = true })[1])
 
    config.cmd = user_config.cmd
-   table.insert(config.cmd, "-stdio")
-   table.insert(config.cmd, "-analyzers")
-   for _, analyzer_path in ipairs(analyzer_paths) do
-      table.insert(config.cmd, analyzer_path)
-   end
    
    config.init_options = {
       productKey = 'sonarlint.nvim',
@@ -57,16 +52,14 @@ local function start_sonarlint_lsp(user_config, analyzer_paths)
 end
 
 function M.setup(config)
-   if not config.analyzers then
-      vim.notify("Please, provide analyzers as a map of filetype and path to the analyzer.", vim.log.levels.WARN)
+   if not config.filetypes then
+      vim.notify("Please, provide filetypes as a list of filetype.", vim.log.levels.WARN)
       return
    end
 
    local pattern = {}
-   local analyzers = {}
-   for filetype, analyzer_path in pairs(config.analyzers) do
+   for i, filetype in ipairs(config.filetypes) do
       table.insert(pattern, filetype)
-      table.insert(analyzers, analyzer_path)
    end
 
    vim.api.nvim_create_autocmd(
@@ -77,7 +70,7 @@ function M.setup(config)
             bufnr = buf.buf
 
             if not M.client_id then
-               M.client_id = start_sonarlint_lsp(config.server, analyzers)
+               M.client_id = start_sonarlint_lsp(config.server)
             end
 
             vim.lsp.buf_attach_client(bufnr, M.client_id)
