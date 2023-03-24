@@ -1,6 +1,7 @@
 local M = {}
 
 M.client_id = nil
+M.classpaths_result = {}
 
 local function start_sonarlint_lsp(user_config)
    local config = {}
@@ -33,6 +34,18 @@ local function start_sonarlint_lsp(user_config)
       return false
    end
 
+   -- TODO: in combination with jdtls_util.with_classpaths it works for the third opened Java file
+   config.handlers['sonarlint/getJavaConfig'] = function()
+      return {
+         projectRoot = M.classpaths_result.projectRoot,
+         -- TODO: how to get source level from jdtls?
+         sourceLevel = "11",
+         classpath = M.classpaths_result.classpaths,
+         isTest = false,
+         -- TODO vmLocation
+      }
+   end
+
    -- https://github.com/SonarSource/sonarlint-language-server/pull/187#issuecomment-1399925116
    config.handlers['workspace/configuration'] = function()
       return {
@@ -51,6 +64,10 @@ local function start_sonarlint_lsp(user_config)
    return client_id
 end
 
+local function attach_sonarlint_client_to_java_buf(buf, jdtls_util)
+   vim.pretty_print("attach_sonarlint_client_to_java_buf")
+end
+
 function M.setup(config)
    if not config.filetypes then
       vim.notify("Please, provide filetypes as a list of filetype.", vim.log.levels.WARN)
@@ -58,7 +75,11 @@ function M.setup(config)
    end
 
    local pattern = {}
+   local java = false
    for i, filetype in ipairs(config.filetypes) do
+      if filetype == "java" then
+         java = true
+      end
       table.insert(pattern, filetype)
    end
 
@@ -77,6 +98,29 @@ function M.setup(config)
          end
       }
    )
+
+   if java then
+      local ok, jdtls_util = pcall(require, 'jdtls.util')
+      if not ok then
+         vim.notify("nvim-jdtls isn't available and is required for analyzing Java files. Make sure to install it", vim.log.levels.ERROR)
+         return
+      end
+
+      vim.api.nvim_create_autocmd( 
+         "FileType",
+         {
+            pattern = "java",
+            callback = function(buf)
+               -- TODO: nvim jdtls has to be booted. If someone opens a Java file for the first time the response won't be fired. Only 
+               -- when somenone opens the third Java file, the classpath has been resolved.
+               jdtls_util.with_classpaths(function(result)
+                  M.classpaths_result = result
+                  vim.pretty_print(result)
+               end)
+            end
+         }
+      )
+   end
 end
 
 return M

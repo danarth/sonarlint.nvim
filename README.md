@@ -28,7 +28,7 @@ require('sonarlint').setup({
    filetypes = {
       -- Tested and working
       'python',
-      -- Not yet working but will be adressed soon
+      -- First working example: third opened Java file will receive SonarLint rule hints
       'java',
    }
 })
