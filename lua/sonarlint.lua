@@ -23,10 +23,13 @@ local function start_sonarlint_lsp(user_config)
    }
 
    config.handlers = {}
-   config.handlers['sonarlint/isOpenInEditor'] = function(...)
-      -- TODO chech if file URI maps to any buffer
-      vim.pretty_print(...)
-      return true
+   config.handlers['sonarlint/isOpenInEditor'] = function(err, uri)
+      for i, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+         if uri == vim.uri_from_bufnr(bufnr) then
+            return true
+         end
+      end
+      return false
    end
    config.handlers['sonarlint/isIgnoredByScm'] = function(...)
       -- TODO check if the file is ignored by the SCM

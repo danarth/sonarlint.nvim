@@ -29,6 +29,7 @@ require('sonarlint').setup({
       -- Tested and working
       'python',
       -- First working example: third opened Java file will receive SonarLint rule hints
+      -- Requires nvim-jdtls
       'java',
    }
 })
