@@ -77,7 +77,7 @@ function M._handle_progress(err, msg, info)
 
    -- TODO: checking the message text seems a little bit brittle. Is there a better way to 
    -- determine if jdtls has classpath information ready
-   if msg.value.message ~= "Validate documents" then
+   if msg.value.message ~= "Synchronizing projects" then
       return
    end
 
