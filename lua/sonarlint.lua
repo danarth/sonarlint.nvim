@@ -9,7 +9,7 @@ local function start_sonarlint_lsp(user_config)
    config.root_dir = user_config.root_dir or vim.fs.dirname(vim.fs.find({'.git'}, { upward = true })[1])
 
    config.cmd = user_config.cmd
-   
+
    config.init_options = {
       productKey = 'sonarlint.nvim',
       productName = 'SonarLint.nvim',
@@ -33,17 +33,15 @@ local function start_sonarlint_lsp(user_config)
    end
    config.handlers['sonarlint/isIgnoredByScm'] = function(...)
       -- TODO check if the file is ignored by the SCM
-      vim.pretty_print(...)
       return false
    end
 
-   -- TODO: in combination with jdtls_util.with_classpaths it works for the third opened Java file
    config.handlers['sonarlint/getJavaConfig'] = function()
       return {
-         projectRoot = M.classpaths_result.projectRoot,
+         projectRoot = M.classpaths_result.projectRoot or "file:" .. vim.lsp.get_client_by_id(M.client_id).config.root_dir,
          -- TODO: how to get source level from jdtls?
          sourceLevel = "11",
-         classpath = M.classpaths_result.classpaths,
+         classpath = M.classpaths_result.classpaths or {},
          isTest = false,
          -- TODO vmLocation
       }
@@ -67,8 +65,30 @@ local function start_sonarlint_lsp(user_config)
    return client_id
 end
 
-local function attach_sonarlint_client_to_java_buf(buf, jdtls_util)
-   vim.pretty_print("attach_sonarlint_client_to_java_buf")
+function M._handle_progress(err, msg, info)
+   local client = vim.lsp.get_client_by_id(info.client_id)
+
+   if client.name ~= "jdtls" then
+      return
+   end
+   if msg.value.kind ~= "end" then
+      return
+   end
+
+   -- TODO: checking the message text seems a little bit brittle. Is there a better way to 
+   -- determine if jdtls has classpath information ready
+   if msg.value.message ~= "Validate documents" then
+      return
+   end
+
+   require('jdtls.util').with_classpaths(function(result)
+      M.classpaths_result = result
+
+      local sonarlint = vim.lsp.get_client_by_id(M.client_id)
+      sonarlint.notify("sonarlint/didClasspathUpdate", { 
+         projectUri = result.projectRoot
+      })
+   end)
 end
 
 function M.setup(config)
@@ -109,20 +129,15 @@ function M.setup(config)
          return
       end
 
-      vim.api.nvim_create_autocmd( 
-         "FileType",
-         {
-            pattern = "java",
-            callback = function(buf)
-               -- TODO: nvim jdtls has to be booted. If someone opens a Java file for the first time the response won't be fired. Only 
-               -- when somenone opens the third Java file, the classpath has been resolved.
-               jdtls_util.with_classpaths(function(result)
-                  M.classpaths_result = result
-                  vim.pretty_print(result)
-               end)
-            end
-         }
-      )
+      if vim.lsp.handlers["$/progress"] then
+         local old_handler = vim.lsp.handlers["$/progress"]
+         vim.lsp.handlers["$/progress"] = function(...)
+            old_handler(...)
+            M._handle_progress(...)
+         end
+      else
+         vim.lsp.handlers["$/progress"] = M._handle_progress
+      end
    end
 end
 
