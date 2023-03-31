@@ -1,7 +1,7 @@
 local M = {}
 
 M.client_id = nil
-M.classpaths_result = {}
+M.classpaths_result = nil
 
 local function start_sonarlint_lsp(user_config)
    local config = {}
@@ -22,6 +22,8 @@ local function start_sonarlint_lsp(user_config)
       architecture = vim.loop.os_uname().machine
    }
 
+   config.capabilities= vim.tbl_deep_extend('keep', user_config.capabilities or {}, vim.lsp.protocol.make_client_capabilities())
+
    config.handlers = {}
    config.handlers['sonarlint/isOpenInEditor'] = function(err, uri)
       for i, bufnr in ipairs(vim.api.nvim_list_bufs()) do
@@ -37,11 +39,13 @@ local function start_sonarlint_lsp(user_config)
    end
 
    config.handlers['sonarlint/getJavaConfig'] = function()
+      local classpaths_result = M.classpaths_result or {}
+
       return {
-         projectRoot = M.classpaths_result.projectRoot or "file:" .. vim.lsp.get_client_by_id(M.client_id).config.root_dir,
+         projectRoot = classpaths_result.projectRoot or "file:" .. vim.lsp.get_client_by_id(M.client_id).config.root_dir,
          -- TODO: how to get source level from jdtls?
          sourceLevel = "11",
-         classpath = M.classpaths_result.classpaths or {},
+         classpath = classpaths_result.classpaths or {},
          isTest = false,
          -- TODO vmLocation
       }
