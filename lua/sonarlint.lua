@@ -66,12 +66,30 @@ local function start_sonarlint_lsp(user_config)
       }
    end
 
-   -- https://github.com/SonarSource/sonarlint-language-server/pull/187#issuecomment-1399925116
-   config.handlers['workspace/configuration'] = function()
-      return {
-         settings = {}
-      }
-   end
+   -- TODO: persist settings
+   config.settings = {
+      sonarlint = {},
+   }
+   config.commands = {
+      ["SonarLint.DeactivateRule"] = function(action)
+         local rule = action.arguments[1]
+         if rule ~= nil then
+            local client = vim.lsp.get_client_by_id(M.client_id)
+            client.config.settings = vim.tbl_deep_extend("force", client.config.settings, {
+               sonarlint = {
+                  rules = {
+                     [rule] = {
+                        level = "off",
+                     },
+                  },
+               },
+            })
+            client.notify("workspace/didChangeConfiguration", {
+               settings = {},
+            })
+         end
+      end,
+   }
 
    config.on_init = init_with_config_notify(config.on_init)
 
