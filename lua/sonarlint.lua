@@ -3,6 +3,21 @@ local M = {}
 M.client_id = nil
 M.classpaths_result = nil
 
+local function init_with_config_notify(original_init)
+   return function(...)
+      local client = select(1, ...)
+
+      -- https://github.com/SonarSource/sonarlint-language-server/pull/187#issuecomment-1399925116
+      client.notify('workspace/didChangeConfiguration', {
+         settings = {},
+      })
+
+      if original_init then
+         original_init(...)
+      end
+   end
+end
+
 local function start_sonarlint_lsp(user_config)
    local config = {}
    config.name = 'sonarlint.nvim'
@@ -58,15 +73,9 @@ local function start_sonarlint_lsp(user_config)
       }
    end
 
-   local client_id = vim.lsp.start_client(config)
+   config.on_init = init_with_config_notify(config.on_init)
 
-   -- https://github.com/SonarSource/sonarlint-language-server/pull/187#issuecomment-1399925116
-   local client = vim.lsp.get_client_by_id(client_id)
-   client.notify('workspace/didChangeConfiguration', {
-      settings = {},
-   })
-
-   return client_id
+   return vim.lsp.start_client(config)
 end
 
 function M._handle_progress(err, msg, info)
