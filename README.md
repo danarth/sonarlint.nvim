@@ -13,7 +13,11 @@ Extensions for the built-in [Language Server Protocol][1] support in [Neovim][2]
 
 This repository is work in progress and the API is likely to change.
 
-# Setup
+# Install sonarlint-ls
+
+You can install the sonarlint-ls by extracting it from the [sonarlint-vscode plugin](https://github.com/SonarSource/sonarlint-vscode). Head over to the [releases](https://github.com/SonarSource/sonarlint-vscode/releases) and download the latest `*.vsix` file. As it is a ZIP file, it contains the `sonarlint-ls.jar` and all available analyzers. Extract these JAR files from the `extension/server/` and `extension/analyzers/`, and configure `sonarlint.nvim` according to the [setup section](#setup).
+
+# <a name="setup"></a>Setup
 
 ```lua
 require('sonarlint').setup({
