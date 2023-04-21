@@ -54,7 +54,17 @@ local function start_sonarlint_lsp(user_config)
       return false
    end
 
-   config.handlers["sonarlint/getJavaConfig"] = function()
+   config.handlers["sonarlint/getJavaConfig"] = function(err, uri)
+      -- TODO if a test file will be opened first then it will be treated as production file
+      local is_test_file = false
+      if M.classpaths_result then
+         local err, is_test_file_result = require("jdtls.util").execute_command({
+            command = "java.project.isTestFile",
+            arguments = { uri },
+         })
+         is_test_file = is_test_file_result
+      end
+
       local classpaths_result = M.classpaths_result or {}
 
       return {
@@ -63,7 +73,7 @@ local function start_sonarlint_lsp(user_config)
          -- TODO: how to get source level from jdtls?
          sourceLevel = "11",
          classpath = classpaths_result.classpaths or {},
-         isTest = false,
+         isTest = is_test_file_result,
          -- TODO vmLocation
       }
    end
