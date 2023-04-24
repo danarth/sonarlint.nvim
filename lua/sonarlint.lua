@@ -105,6 +105,30 @@ local function start_sonarlint_lsp(user_config)
             })
          end
       end,
+      ["SonarLint.ShowAllLocations"] = function(result, ...)
+         local list = {}
+         for i, arg in ipairs(result.arguments) do
+            local bufnr = vim.uri_to_bufnr(arg.fileUri)
+
+            for j, flow in ipairs(arg.flows) do
+               for k, location in ipairs(flow.locations) do
+                  local text_range = location.textRange
+
+                  table.insert(list, {
+                     bufnr = bufnr,
+                     lnum = text_range.startLine,
+                     col = text_range.startLineOffset,
+                     end_lnum = text_range.endLine,
+                     end_col = text_range.endLineOffset,
+                     text = arg.message,
+                  })
+               end
+            end
+         end
+
+         vim.fn.setqflist(list, "r")
+         vim.cmd("copen")
+      end,
    }
 
    config.on_init = init_with_config_notify(config.on_init)
