@@ -34,12 +34,13 @@ require('sonarlint').setup({
          'java', '-jar', 'sonarlint-language-server-VERSION.jar',
          -- Ensure that sonarlint-language-server uses stdio channel
          '-stdio',
-         '-analyzers', 'path/to/analyzer1.jar', 'path/to/analyzer2.jar',
+         '-analyzers', 'path/to/analyzer1.jar', 'path/to/analyzer2.jar', 'path/to/analyzer3.jar',
       }
    },
    filetypes = {
       -- Tested and working
       'python',
+      'cpp',
       -- Requires nvim-jdtls, otherwise an error message will be printed
       'java',
    }
@@ -58,12 +59,14 @@ require('sonarlint').setup({
          '-analyzers',
          -- paths to the analyzers you need, using those for python and java in this example
          vim.fn.expand("$MASON/share/sonarlint-analyzers/sonarpython.jar"),
+         vim.fn.expand("$MASON/share/sonarlint-analyzers/sonarcfamily.jar"),
          vim.fn.expand("$MASON/share/sonarlint-analyzers/sonarjava.jar"),
       }
    },
    filetypes = {
       -- Tested and working
       'python',
+      'cpp',
       -- Requires nvim-jdtls, otherwise an error message will be printed
       'java',
    }
