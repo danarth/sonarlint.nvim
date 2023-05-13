@@ -78,15 +78,15 @@ local function start_sonarlint_lsp(user_config)
    end
 
    config.handlers["sonarlint/needCompilationDatabase"] = function(err, uri)
-      local locations = vim.fs.find('compile_commands.json',{
-         upward=true,
-         path=vim.fs.dirname(vim.api.nvim_buf_get_name(0))
+      local locations = vim.fs.find("compile_commands.json", {
+         upward = true,
+         path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
       })
       if #locations > 0 then
          local client = vim.lsp.get_client_by_id(M.client_id)
          client.config.settings = vim.tbl_deep_extend("force", client.config.settings, {
             sonarlint = {
-               pathToCompileCommands = locations[1]
+               pathToCompileCommands = locations[1],
             },
          })
          client.notify("workspace/didChangeConfiguration", {
