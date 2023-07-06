@@ -5,9 +5,10 @@ M.classpaths_result = nil
 
 local utils = require("sonarlint.utils")
 
-local function init_with_config_notify(original_init)
+local function init_with_config_notify(original_init, original_settings)
    return function(...)
       local client = select(1, ...)
+      client.config.settings = vim.tbl_deep_extend("force", client.config.settings, original_settings)
 
       -- https://github.com/SonarSource/sonarlint-language-server/pull/187#issuecomment-1399925116
       client.notify("workspace/didChangeConfiguration", {
@@ -21,11 +22,13 @@ local function init_with_config_notify(original_init)
 end
 
 local function start_sonarlint_lsp(user_config)
-   local config = {}
-   config.name = "sonarlint.nvim"
-   config.root_dir = user_config.root_dir or vim.fs.dirname(vim.fs.find({ ".git" }, { upward = true })[1])
+   local config = vim.tbl_deep_extend("keep", user_config, {
+      root_dir = vim.fs.dirname(vim.fs.find({ ".git" }, { upward = true })[1]),
+      capabilities = vim.lsp.protocol.make_client_capabilities(),
+      settings = { sonarlint = {} },
+   })
 
-   config.cmd = user_config.cmd
+   config.name = "sonarlint.nvim"
 
    config.init_options = {
       productKey = "sonarlint.nvim",
@@ -38,9 +41,6 @@ local function start_sonarlint_lsp(user_config)
       platform = vim.loop.os_uname().sysname,
       architecture = vim.loop.os_uname().machine,
    }
-
-   config.capabilities =
-      vim.tbl_deep_extend("keep", user_config.capabilities or {}, vim.lsp.protocol.make_client_capabilities())
 
    config.handlers = {}
 
@@ -114,9 +114,6 @@ local function start_sonarlint_lsp(user_config)
    end
 
    -- TODO: persist settings
-   config.settings = {
-      sonarlint = {},
-   }
    config.commands = {
       ["SonarLint.DeactivateRule"] = function(action)
          local rule = action.arguments[1]
@@ -162,7 +159,7 @@ local function start_sonarlint_lsp(user_config)
       end,
    }
 
-   config.on_init = init_with_config_notify(config.on_init)
+   config.on_init = init_with_config_notify(config.on_init, config.settings)
 
    return vim.lsp.start_client(config)
 end
