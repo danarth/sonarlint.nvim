@@ -92,6 +92,11 @@ local function start_sonarlint_lsp(user_config)
          client.notify("workspace/didChangeConfiguration", {
             settings = {},
          })
+      else
+         vim.notify(
+            "Couldn't find compile_commands.json. Make sure it exists in a parent directory.",
+            vim.log.levels.ERROR
+         )
       end
    end
 
