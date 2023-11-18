@@ -25,6 +25,18 @@ If you are using [`mason.nvim`](https://github.com/williamboman/mason.nvim) you 
 
 # <a name="setup"></a>Setup
 
+:warning: Make sure that you configure sonarlint.nvim after [lspconfig](https://github.com/neovim/nvim-lspconfig).
+
+```lua
+local lspconfig = require('lspconfig')
+
+-- do stuff with lspconfig
+
+require('sonarlint').setup({
+   -- …
+})
+```
+
 ## For manual installation
 
 ```lua
