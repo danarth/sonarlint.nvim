@@ -3,6 +3,8 @@ local M = {}
 M.client_id = nil
 M.classpaths_result = nil
 
+local utils = require("sonarlint.utils")
+
 local function init_with_config_notify(original_init)
    return function(...)
       local client = select(1, ...)
@@ -41,14 +43,20 @@ local function start_sonarlint_lsp(user_config)
       vim.tbl_deep_extend("keep", user_config.capabilities or {}, vim.lsp.protocol.make_client_capabilities())
 
    config.handlers = {}
+
+   -- TODO: sonarlint/isOpenInEditor has been replaced in
+   -- sonarlint-language-server 3.0.0.74514 by sonarlint/shouldAnalyseFile.
+   -- This will be kept for a while to be none-breaking for setups with older
+   -- clients.
    config.handlers["sonarlint/isOpenInEditor"] = function(err, uri)
-      for i, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-         if uri == vim.uri_from_bufnr(bufnr) then
-            return true
-         end
-      end
-      return false
+      return utils.is_open_in_editor(uri)
    end
+   config.handlers["sonarlint/shouldAnalyseFile"] = function(err, uri)
+      return {
+         shouldBeAnalysed = utils.is_open_in_editor(uri.uri),
+      }
+   end
+
    config.handlers["sonarlint/isIgnoredByScm"] = function(...)
       -- TODO check if the file is ignored by the SCM
       return false
