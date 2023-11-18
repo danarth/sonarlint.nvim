@@ -108,10 +108,7 @@ local function start_sonarlint_lsp(user_config)
       end
    end
 
-   config.handlers["sonarlint/showRuleDescription"] = function(err, result, context)
-      local markdown_lines = vim.lsp.util.convert_input_to_markdown_lines(result.htmlDescription)
-      vim.lsp.util.open_floating_preview(markdown_lines, "markdown", {})
-   end
+   config.handlers["sonarlint/showRuleDescription"] = require("sonarlint.rules").show_rule_handler
 
    -- TODO: persist settings
    config.commands = {

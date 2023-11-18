@@ -4,11 +4,10 @@
 
 # sonarlint.nvim
 
-Extensions for the built-in [Language Server Protocol][1] support in [Neovim][2] (>= 0.8.0) for [sonarlint-language-server][3] (>= 2.16.0.65434).
+Extensions for the built-in [Language Server Protocol][1] support in
+[Neovim][2] (>= 0.8.0) for [sonarlint-language-server][3] (>= 2.16.0.65434).
 
-[1]: https://microsoft.github.io/language-server-protocol/
-[2]: https://neovim.io/
-[3]: https://github.com/SonarSource/sonarlint-language-server
+![Demo of sonarlint.nvim on sonarlint-language-server it self](doc/demo.gif)
 
 # Warning :warning:
 
@@ -97,3 +96,7 @@ require('sonarlint').setup({
    }
 })
 ```
+
+[1]: https://microsoft.github.io/language-server-protocol/
+[2]: https://neovim.io/
+[3]: https://github.com/SonarSource/sonarlint-language-server
